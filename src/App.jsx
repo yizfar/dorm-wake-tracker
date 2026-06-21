@@ -1055,6 +1055,47 @@ export default function App() {
   const [viewStudent, setViewStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dbStatus, setDbStatus] = useState("loading"); // loading | connected | demo
+
+  // ניסיון לטעון בחורים מסופהבייס. אם נכשל - ממשיכים עם נתוני הדמו בלי לשבור את האתר.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    async function loadStudents() {
+      try {
+        const { data, error } = await supabase.from("students").select("*");
+        if (error) throw error;
+        if (cancelled) return;
+        if (data && data.length > 0) {
+          const mapped = data.map(s => ({
+            id: s.id,
+            first_name: s.first_name,
+            last_name: s.last_name,
+            phone: s.phone,
+            father_name: s.father_name,
+            father_phone: s.father_phone,
+            mother_name: s.mother_name,
+            mother_phone: s.mother_phone,
+            apartment_id: s.apartment_id,
+            seniority: s.seniority,
+            medical_treatment: s.medical_treatment,
+            notes: s.notes,
+            is_active: s.is_active,
+          }));
+          setStudents(mapped);
+          setRecords(genRecords(mapped));
+          setDbStatus("connected");
+        } else {
+          setDbStatus("demo");
+        }
+      } catch (e) {
+        console.error("שגיאה בטעינה מסופהבייס, ממשיכים עם נתוני דמו:", e.message);
+        if (!cancelled) setDbStatus("demo");
+      }
+    }
+    loadStudents();
+    return () => { cancelled = true; };
+  }, [user]);
 
   if (!user) {
     return <LoginScreen onLogin={u => setUser(u)} onSkip={() => setUser({ email:"demo", name:"דמו" })} />;
