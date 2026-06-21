@@ -1163,11 +1163,13 @@ export default function App() {
           </div>
           <button onClick={() => setUser(null)}
             style={{ width:"100%", padding:"6px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:7, color:"rgba(255,255,255,0.7)", fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
-            🚪 התנתקות
+          🚪 התנתקות
           </button>
+          <div style={{ marginTop:8, fontSize:10, textAlign:"center", color: dbStatus==="connected" ? "#4ade80" : dbStatus==="loading" ? "rgba(255,255,255,0.4)" : "#fbbf24" }}>
+            {dbStatus==="connected" ? "🟢 מחובר לסופהבייס" : dbStatus==="loading" ? "⏳ טוען..." : "🟡 נתוני דמו"}
+          </div>
         </div>
       </aside>
-
       <main className="dt-main" style={{ flex:1, marginRight:210, padding:"20px", minWidth:0, animation:"fadeUp .2s ease" }}>
         <button className="dt-menu-btn" onClick={() => setSidebarOpen(true)}
           style={{ alignItems:"center", gap:6, background:"#1e3a5f", color:"#fff", border:"none", borderRadius:8, padding:"8px 14px", fontSize:13, cursor:"pointer", fontFamily:"inherit", marginBottom:14 }}>
