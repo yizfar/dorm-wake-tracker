@@ -462,14 +462,29 @@ function Dashboard({ students, records, setRecords, apartments, counselors, floo
   const [savingId,     setSavingId]     = useState(null);
   const [showSummary,  setShowSummary]  = useState(false);
 
-  function setStatus(sid, status) {
+ function setStatus(sid, status) {
     setSavingId(sid);
-    setTimeout(() => {
-      setRecords(prev => ({ ...prev, [sid]: { ...(prev[sid] || {}), [TODAY]: status || undefined } }));
-      setSavingId(null);
-    }, 220);
+    setRecords(prev => ({ ...prev, [sid]: { ...(prev[sid] || {}), [TODAY]: status || undefined } }));
+    (async () => {
+      try {
+        if (status) {
+          const { error } = await supabase.from("daily_records").upsert(
+            { student_id: sid, record_date: TODAY, status },
+            { onConflict: "student_id,record_date" }
+          );
+          if (error) console.error("שגיאה בשמירת סטטוס:", error.message);
+        } else {
+          const { error } = await supabase.from("daily_records").delete()
+            .eq("student_id", sid).eq("record_date", TODAY);
+          if (error) console.error("שגיאה במחיקת סטטוס:", error.message);
+        }
+      } catch (e) {
+        console.error("שגיאה בשמירה לסופהבייס:", e.message);
+      } finally {
+        setSavingId(null);
+      }
+    })();
   }
-
   const active   = students.filter(s => showInactive ? true : s.is_active);
   const filtered = useMemo(() => active.filter(s => {
     const apt = apartments.find(a => a.id === s.apartment_id);
