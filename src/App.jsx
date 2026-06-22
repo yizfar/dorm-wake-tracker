@@ -1097,9 +1097,22 @@ export default function App() {
             notes: s.notes,
             is_active: s.is_active,
           }));
-          setStudents(mapped);
-          setRecords(genRecords(mapped));
+         setStudents(mapped);
           setDbStatus("connected");
+          try {
+            const { data: recData, error: recError } = await supabase.from("daily_records").select("*");
+            if (recError) throw recError;
+            const recordsMap = {};
+            mapped.forEach(s => { recordsMap[s.id] = {}; });
+            (recData || []).forEach(r => {
+              if (!recordsMap[r.student_id]) recordsMap[r.student_id] = {};
+              recordsMap[r.student_id][r.record_date] = r.status;
+            });
+            setRecords(recordsMap);
+          } catch (e) {
+            console.error("שגיאה בטעינת סטטוסים יומיים:", e.message);
+            setRecords(genRecords(mapped));
+          }
         } else {
           setDbStatus("demo");
         }
