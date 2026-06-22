@@ -1063,9 +1063,7 @@ export default function App() {
     let cancelled = false;
     async function loadStudents() {
       try {
-        console.log("🔍 מתחיל לטעון בחורים מסופהבייס...");
         const { data, error } = await supabase.from("students").select("*");
-        console.log("📦 תוצאה מסופהבייס - data:", data, "error:", error);
         if (error) throw error;
         if (cancelled) return;
         if (data && data.length > 0) {
