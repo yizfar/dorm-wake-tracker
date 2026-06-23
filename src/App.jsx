@@ -1249,11 +1249,36 @@ export default function App() {
         <StudentProfile student={viewStudent} records={records} apartments={apartments} counselors={counselors} floors={FLOORS}
           onClose={() => setViewStudent(null)} onEdit={s => { setEditStudent(s); setViewStudent(null); }} />
       )}
-      {editStudent && (
+   {editStudent && (
         <StudentForm student={editStudent} apartments={apartments} counselors={counselors}
-          onSave={form => {
-            if (form.id) { setStudents(p => p.map(s => s.id===form.id ? {...s,...form} : s)); }
-            else { const ns={...form,id:`s${Date.now()}`}; setStudents(p=>[...p,ns]); setRecords(p=>({...p,[ns.id]:{}})); }
+          onSave={async form => {
+            try {
+              if (form.id) {
+                const { error } = await supabase.from("students").update({
+                  first_name: form.first_name, last_name: form.last_name, phone: form.phone,
+                  father_name: form.father_name, father_phone: form.father_phone,
+                  mother_name: form.mother_name, mother_phone: form.mother_phone,
+                  apartment_id: form.apartment_id || null, seniority: form.seniority,
+                  medical_treatment: form.medical_treatment, notes: form.notes, is_active: form.is_active,
+                }).eq("id", form.id);
+                if (error) throw error;
+                setStudents(p => p.map(s => s.id===form.id ? {...s,...form} : s));
+              } else {
+                const { data, error } = await supabase.from("students").insert({
+                  first_name: form.first_name, last_name: form.last_name, phone: form.phone,
+                  father_name: form.father_name, father_phone: form.father_phone,
+                  mother_name: form.mother_name, mother_phone: form.mother_phone,
+                  apartment_id: form.apartment_id || null, seniority: form.seniority,
+                  medical_treatment: form.medical_treatment, notes: form.notes, is_active: form.is_active,
+                }).select().single();
+                if (error) throw error;
+                const ns={...form,id:data.id};
+                setStudents(p=>[...p,ns]); setRecords(p=>({...p,[ns.id]:{}}));
+              }
+            } catch (e) {
+              console.error("שגיאה בשמירת בחור:", e.message);
+              alert("שגיאה בשמירה: " + e.message);
+            }
             setEditStudent(null);
           }} onClose={() => setEditStudent(null)} />
       )}
