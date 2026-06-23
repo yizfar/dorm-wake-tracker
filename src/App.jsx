@@ -847,11 +847,23 @@ function AdminPage({ apartments, setApartments, counselors, setCounselors, floor
     else          { setCounselors(p => [...p, { id:`c${Date.now()}`, ...cnslRef.current }]); }
     cnslRef.current = { name:"", phone:"", floor_id:"" }; setCnslFloor(""); setShowCnslForm(false); setEditCnsl(null);
   }
-  function doDelete() {
+function doDelete() {
     if (!confirmDel) return;
     if (confirmDel.type === "apt")     setApartments(p => p.filter(a => a.id !== confirmDel.id));
     if (confirmDel.type === "cnsl")    setCounselors(p => p.filter(c => c.id !== confirmDel.id));
-    if (confirmDel.type === "student") { setStudents(p => p.filter(s => s.id !== confirmDel.id)); setRecords(p => { const n={...p}; delete n[confirmDel.id]; return n; }); }
+    if (confirmDel.type === "student") {
+      (async () => {
+        try {
+          const { error } = await supabase.from("students").delete().eq("id", confirmDel.id);
+          if (error) throw error;
+        } catch (e) {
+          console.error("שגיאה במחיקת בחור:", e.message);
+          alert("שגיאה במחיקה: " + e.message);
+        }
+        setStudents(p => p.filter(s => s.id !== confirmDel.id));
+        setRecords(p => { const n={...p}; delete n[confirmDel.id]; return n; });
+      })();
+    }
     setConfirmDel(null);
   }
 
