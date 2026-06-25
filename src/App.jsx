@@ -961,15 +961,36 @@ function doDelete() {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
             <h2 style={{ fontSize:15, fontWeight:600 }}>ניהול מדריכים</h2>
-            <Btn onClick={()=>{setShowCnslForm(true);setEditCnsl(null);cnslRef.current={name:"",phone:"",floor_id:""};setCnslFloor("");}} variant="accent">+ הוספת מדריך</Btn>
+<Btn onClick={()=>{setShowCnslForm(true);setEditCnsl(null);cnslRef.current={name:"",phone:"",floor_id:""};setCnslFloor("");setCnslApts([]);}} variant="accent">+ הוספת מדריך</Btn>
           </div>
           {(showCnslForm||editCnsl)&&(
             <div style={{ background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:10, padding:14, marginBottom:12 }}>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto", gap:10, alignItems:"flex-end" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto", gap:10, alignItems:"flex-end", marginBottom:12 }}>
                 <div><label style={{ fontSize:12,color:"#64748b",marginBottom:4,display:"block" }}>שם מדריך</label><UInput initValue={cnslRef.current.name} onBlur={v=>{cnslRef.current.name=v;}} placeholder="ר' אברהם כהן"/></div>
                 <div><label style={{ fontSize:12,color:"#64748b",marginBottom:4,display:"block" }}>טלפון</label><UInput initValue={cnslRef.current.phone} onBlur={v=>{cnslRef.current.phone=v;}} placeholder="050-..." dir="ltr"/></div>
                 <div><label style={{ fontSize:12,color:"#64748b",marginBottom:4,display:"block" }}>קומה</label><Sel value={cnslFloor} onChange={e=>setCnslFloor(e.target.value)}><option value="">בחר</option>{floors.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</Sel></div>
                 <div style={{display:"flex",gap:6}}><Btn onClick={saveCnsl} variant="primary">שמור</Btn><Btn onClick={()=>{setShowCnslForm(false);setEditCnsl(null);}} variant="ghost">ביטול</Btn></div>
+              </div>
+              <div>
+                <label style={{ fontSize:12,color:"#64748b",marginBottom:6,display:"block" }}>דירות באחריות המדריך (ניתן לבחור כמה)</label>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                  {apartments.map(a => {
+                    const checked = cnslApts.includes(a.id);
+                    const takenByOther = a.counselor_id && a.counselor_id !== (editCnsl?.id || "");
+                    return (
+                      <label key={a.id} style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, padding:"4px 9px", borderRadius:7, cursor:"pointer", background: checked?"#dbeafe":"#fff", border:"1px solid "+(checked?"#93c5fd":"#e2e8f0"), opacity: takenByOther && !checked ? 0.5 : 1 }}>
+                        <input type="checkbox" checked={checked}
+                          onChange={e=>{
+                            if (e.target.checked) setCnslApts(p=>[...p,a.id]);
+                            else setCnslApts(p=>p.filter(x=>x!==a.id));
+                          }} />
+                        {a.name}
+                        {takenByOther && !checked && <span style={{ color:"#94a3b8" }}> (תפוסה)</span>}
+                      </label>
+                    );
+                  })}
+                  {apartments.length===0 && <span style={{ fontSize:12, color:"#94a3b8" }}>אין דירות עדיין - הוסף דירות בטאב "דירות" קודם</span>}
+                </div>
               </div>
             </div>
           )}
