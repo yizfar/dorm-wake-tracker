@@ -869,14 +869,14 @@ function AdminPage({ apartments, setApartments, counselors, setCounselors, floor
         let newCounselorId;
         if (editCnsl) {
           const { error } = await supabase.from("counselors").update({
-            name: cnslRef.current.name, phone: cnslRef.current.phone, floor_id: cnslRef.current.floor_id || null,
+            name: cnslRef.current.name, phone: cnslRef.current.phone, floor_id: asUuidOrNull(cnslRef.current.floor_id),
           }).eq("id", editCnsl.id);
           if (error) throw error;
           setCounselors(p => p.map(c => c.id===editCnsl.id ? {...c,...cnslRef.current} : c));
           newCounselorId = editCnsl.id;
         } else {
           const { data, error } = await supabase.from("counselors").insert({
-            name: cnslRef.current.name, phone: cnslRef.current.phone, floor_id: cnslRef.current.floor_id || null,
+            name: cnslRef.current.name, phone: cnslRef.current.phone, floor_id: asUuidOrNull(cnslRef.current.floor_id),
           }).select().single();
           if (error) throw error;
           newCounselorId = data.id;
