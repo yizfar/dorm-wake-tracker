@@ -843,13 +843,13 @@ function AdminPage({ apartments, setApartments, counselors, setCounselors, floor
       try {
         if (editApt) {
           const { error } = await supabase.from("apartments").update({
-            name: aptForm.name, floor_id: aptForm.floor_id || null, counselor_id: aptForm.counselor_id || null,
+            name: aptForm.name, floor_id: asUuidOrNull(aptForm.floor_id), counselor_id: asUuidOrNull(aptForm.counselor_id),
           }).eq("id", editApt.id);
           if (error) throw error;
           setApartments(p => p.map(a => a.id===editApt.id ? {...a,...aptForm} : a));
         } else {
           const { data, error } = await supabase.from("apartments").insert({
-            name: aptForm.name, floor_id: aptForm.floor_id || null, counselor_id: aptForm.counselor_id || null,
+            name: aptForm.name, floor_id: asUuidOrNull(aptForm.floor_id), counselor_id: asUuidOrNull(aptForm.counselor_id),
           }).select().single();
           if (error) throw error;
           setApartments(p => [...p, { id:data.id, ...aptForm }]);
