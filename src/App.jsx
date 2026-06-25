@@ -841,12 +841,23 @@ const [showCnslForm, setShowCnslForm] = useState(false);
     else          { setApartments(p => [...p, { id:`a${Date.now()}`, ...aptForm }]); }
     setAptForm({ name:"", floor_id:"", counselor_id:"" }); setShowAptForm(false); setEditApt(null);
   }
-  function saveCnsl() {
+ function saveCnsl() {
     cnslRef.current.floor_id = cnslFloor;
     if (!cnslRef.current.name) return;
-    if (editCnsl) { setCounselors(p => p.map(c => c.id===editCnsl.id ? {...c,...cnslRef.current} : c)); }
-    else          { setCounselors(p => [...p, { id:`c${Date.now()}`, ...cnslRef.current }]); }
-    cnslRef.current = { name:"", phone:"", floor_id:"" }; setCnslFloor(""); setShowCnslForm(false); setEditCnsl(null);
+    let newCounselorId;
+    if (editCnsl) {
+      setCounselors(p => p.map(c => c.id===editCnsl.id ? {...c,...cnslRef.current} : c));
+      newCounselorId = editCnsl.id;
+    } else {
+      newCounselorId = `c${Date.now()}`;
+      setCounselors(p => [...p, { id:newCounselorId, ...cnslRef.current }]);
+    }
+    setApartments(p => p.map(a => {
+      if (cnslApts.includes(a.id)) return { ...a, counselor_id: newCounselorId };
+      if (a.counselor_id === newCounselorId && !cnslApts.includes(a.id)) return { ...a, counselor_id: "" };
+      return a;
+    }));
+    cnslRef.current = { name:"", phone:"", floor_id:"" }; setCnslFloor(""); setCnslApts([]); setShowCnslForm(false); setEditCnsl(null);
   }
 function doDelete() {
     if (!confirmDel) return;
