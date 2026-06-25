@@ -829,40 +829,104 @@ function AdminPage({ apartments, setApartments, counselors, setCounselors, floor
   const [showAptForm, setShowAptForm]   = useState(false);
   const [aptForm, setAptForm]           = useState({ name:"", floor_id:"", counselor_id:"" });
   const [editApt, setEditApt]           = useState(null);
-const [showCnslForm, setShowCnslForm] = useState(false);
+  const [showCnslForm, setShowCnslForm] = useState(false);
   const cnslRef   = useRef({ name:"", phone:"", floor_id:"" });
   const [cnslFloor, setCnslFloor]       = useState("");
-  const [cnslApts, setCnslApts]         = useState([]);
+  const [cnslApts, setCnslApts]         = useState([]); // דירות שמשויכות למדריך הנוכחי בטופס
   const [editCnsl, setEditCnsl]         = useState(null);
 
   function saveApt() {
     if (!aptForm.name) return;
-    if (editApt) { setApartments(p => p.map(a => a.id===editApt.id ? {...a,...aptForm} : a)); }
-    else          { setApartments(p => [...p, { id:`a${Date.now()}`, ...aptForm }]); }
+    (async () => {
+      try {
+        if (editApt) {
+          const { error } = await supabase.from("apartments").update({
+            name: aptForm.name, floor_id: aptForm.floor_id || null, counselor_id: aptForm.counselor_id || null,
+          }).eq("id", editApt.id);
+          if (error) throw error;
+          setApartments(p => p.map(a => a.id===editApt.id ? {...a,...aptForm} : a));
+        } else {
+          const { data, error } = await supabase.from("apartments").insert({
+            name: aptForm.name, floor_id: aptForm.floor_id || null, counselor_id: aptForm.counselor_id || null,
+          }).select().single();
+          if (error) throw error;
+          setApartments(p => [...p, { id:data.id, ...aptForm }]);
+        }
+      } catch (e) {
+        console.error("שגיאה בשמירת דירה:", e.message);
+        alert("שגיאה בשמירת דירה: " + e.message);
+      }
+    })();
     setAptForm({ name:"", floor_id:"", counselor_id:"" }); setShowAptForm(false); setEditApt(null);
   }
- function saveCnsl() {
+  function saveCnsl() {
     cnslRef.current.floor_id = cnslFloor;
     if (!cnslRef.current.name) return;
-    let newCounselorId;
-    if (editCnsl) {
-      setCounselors(p => p.map(c => c.id===editCnsl.id ? {...c,...cnslRef.current} : c));
-      newCounselorId = editCnsl.id;
-    } else {
-      newCounselorId = `c${Date.now()}`;
-      setCounselors(p => [...p, { id:newCounselorId, ...cnslRef.current }]);
-    }
-    setApartments(p => p.map(a => {
-      if (cnslApts.includes(a.id)) return { ...a, counselor_id: newCounselorId };
-      if (a.counselor_id === newCounselorId && !cnslApts.includes(a.id)) return { ...a, counselor_id: "" };
-      return a;
-    }));
+    (async () => {
+      try {
+        let newCounselorId;
+        if (editCnsl) {
+          const { error } = await supabase.from("counselors").update({
+            name: cnslRef.current.name, phone: cnslRef.current.phone, floor_id: cnslRef.current.floor_id || null,
+          }).eq("id", editCnsl.id);
+          if (error) throw error;
+          setCounselors(p => p.map(c => c.id===editCnsl.id ? {...c,...cnslRef.current} : c));
+          newCounselorId = editCnsl.id;
+        } else {
+          const { data, error } = await supabase.from("counselors").insert({
+            name: cnslRef.current.name, phone: cnslRef.current.phone, floor_id: cnslRef.current.floor_id || null,
+          }).select().single();
+          if (error) throw error;
+          newCounselorId = data.id;
+          setCounselors(p => [...p, { id:newCounselorId, ...cnslRef.current }]);
+        }
+        // עדכון הדירות שנבחרו - גם בסופהבייס וגם מקומית
+        const aptsToAssign = cnslApts;
+        const aptsToUnassign = apartments.filter(a => a.counselor_id === newCounselorId && !cnslApts.includes(a.id)).map(a => a.id);
+        for (const aptId of aptsToAssign) {
+          await supabase.from("apartments").update({ counselor_id: newCounselorId }).eq("id", aptId);
+        }
+        for (const aptId of aptsToUnassign) {
+          await supabase.from("apartments").update({ counselor_id: null }).eq("id", aptId);
+        }
+        setApartments(p => p.map(a => {
+          if (cnslApts.includes(a.id)) return { ...a, counselor_id: newCounselorId };
+          if (a.counselor_id === newCounselorId && !cnslApts.includes(a.id)) return { ...a, counselor_id: "" };
+          return a;
+        }));
+      } catch (e) {
+        console.error("שגיאה בשמירת מדריך:", e.message);
+        alert("שגיאה בשמירת מדריך: " + e.message);
+      }
+    })();
     cnslRef.current = { name:"", phone:"", floor_id:"" }; setCnslFloor(""); setCnslApts([]); setShowCnslForm(false); setEditCnsl(null);
   }
 function doDelete() {
     if (!confirmDel) return;
-    if (confirmDel.type === "apt")     setApartments(p => p.filter(a => a.id !== confirmDel.id));
-    if (confirmDel.type === "cnsl")    setCounselors(p => p.filter(c => c.id !== confirmDel.id));
+    if (confirmDel.type === "apt") {
+      (async () => {
+        try {
+          const { error } = await supabase.from("apartments").delete().eq("id", confirmDel.id);
+          if (error) throw error;
+        } catch (e) {
+          console.error("שגיאה במחיקת דירה:", e.message);
+          alert("שגיאה במחיקה: " + e.message);
+        }
+        setApartments(p => p.filter(a => a.id !== confirmDel.id));
+      })();
+    }
+    if (confirmDel.type === "cnsl") {
+      (async () => {
+        try {
+          const { error } = await supabase.from("counselors").delete().eq("id", confirmDel.id);
+          if (error) throw error;
+        } catch (e) {
+          console.error("שגיאה במחיקת מדריך:", e.message);
+          alert("שגיאה במחיקה: " + e.message);
+        }
+        setCounselors(p => p.filter(c => c.id !== confirmDel.id));
+      })();
+    }
     if (confirmDel.type === "student") {
       (async () => {
         try {
@@ -961,7 +1025,7 @@ function doDelete() {
         <div>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
             <h2 style={{ fontSize:15, fontWeight:600 }}>ניהול מדריכים</h2>
-<Btn onClick={()=>{setShowCnslForm(true);setEditCnsl(null);cnslRef.current={name:"",phone:"",floor_id:""};setCnslFloor("");setCnslApts([]);}} variant="accent">+ הוספת מדריך</Btn>
+            <Btn onClick={()=>{setShowCnslForm(true);setEditCnsl(null);cnslRef.current={name:"",phone:"",floor_id:""};setCnslFloor("");setCnslApts([]);}} variant="accent">+ הוספת מדריך</Btn>
           </div>
           {(showCnslForm||editCnsl)&&(
             <div style={{ background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:10, padding:14, marginBottom:12 }}>
@@ -1137,6 +1201,7 @@ export default function App() {
   const [records,    setRecords]    = useState(() => genRecords(STUDENTS_INIT));
   const [apartments, setApartments] = useState(APARTMENTS_INIT);
   const [counselors, setCounselors] = useState(COUNSELORS_INIT);
+  const [floors,     setFloors]     = useState(FLOORS);
   const [viewStudent, setViewStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1192,6 +1257,38 @@ export default function App() {
       }
     }
     loadStudents();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // טעינת קומות, מדריכים ודירות מסופהבייס (בנפרד מבחורים, כדי שכשל באחד לא ישבור את השני)
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    async function loadOrgData() {
+      try {
+        const [flrRes, cnslRes, aptRes] = await Promise.all([
+          supabase.from("floors").select("*"),
+          supabase.from("counselors").select("*"),
+          supabase.from("apartments").select("*"),
+        ]);
+        if (cancelled) return;
+        if (flrRes.error) throw flrRes.error;
+        if (cnslRes.error) throw cnslRes.error;
+        if (aptRes.error) throw aptRes.error;
+        if (flrRes.data && flrRes.data.length > 0) {
+          setFloors(flrRes.data.map(f => ({ id: f.id, name: f.name, floor_number: f.floor_number })));
+        }
+        if (cnslRes.data && cnslRes.data.length > 0) {
+          setCounselors(cnslRes.data.map(c => ({ id: c.id, name: c.name, phone: c.phone, floor_id: c.floor_id })));
+        }
+        if (aptRes.data && aptRes.data.length > 0) {
+          setApartments(aptRes.data.map(a => ({ id: a.id, name: a.name, floor_id: a.floor_id, counselor_id: a.counselor_id })));
+        }
+      } catch (e) {
+        console.error("שגיאה בטעינת קומות/מדריכים/דירות:", e.message);
+      }
+    }
+    loadOrgData();
     return () => { cancelled = true; };
   }, [user]);
 
@@ -1273,13 +1370,13 @@ export default function App() {
           style={{ alignItems:"center", gap:6, background:"#1e3a5f", color:"#fff", border:"none", borderRadius:8, padding:"8px 14px", fontSize:13, cursor:"pointer", fontFamily:"inherit", marginBottom:14 }}>
           ☰ תפריט
         </button>
-        {page==="dashboard" && <Dashboard students={students} records={records} setRecords={setRecords} apartments={apartments} counselors={counselors} floors={FLOORS} onViewStudent={setViewStudent} onEdit={setEditStudent} />}
+        {page==="dashboard" && <Dashboard students={students} records={records} setRecords={setRecords} apartments={apartments} counselors={counselors} floors={floors} onViewStudent={setViewStudent} onEdit={setEditStudent} />}
         {page==="analytics" && <Analytics students={students} records={records} apartments={apartments} counselors={counselors} />}
-        {page==="admin"     && <AdminPage apartments={apartments} setApartments={setApartments} counselors={counselors} setCounselors={setCounselors} floors={FLOORS} students={students} setStudents={setStudents} setRecords={setRecords} records={records} />}
+        {page==="admin"     && <AdminPage apartments={apartments} setApartments={setApartments} counselors={counselors} setCounselors={setCounselors} floors={floors} students={students} setStudents={setStudents} setRecords={setRecords} records={records} />}
       </main>
 
       {viewStudent && !editStudent && (
-        <StudentProfile student={viewStudent} records={records} apartments={apartments} counselors={counselors} floors={FLOORS}
+        <StudentProfile student={viewStudent} records={records} apartments={apartments} counselors={counselors} floors={floors}
           onClose={() => setViewStudent(null)} onEdit={s => { setEditStudent(s); setViewStudent(null); }} />
       )}
    {editStudent && (
