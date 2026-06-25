@@ -829,9 +829,10 @@ function AdminPage({ apartments, setApartments, counselors, setCounselors, floor
   const [showAptForm, setShowAptForm]   = useState(false);
   const [aptForm, setAptForm]           = useState({ name:"", floor_id:"", counselor_id:"" });
   const [editApt, setEditApt]           = useState(null);
-  const [showCnslForm, setShowCnslForm] = useState(false);
+const [showCnslForm, setShowCnslForm] = useState(false);
   const cnslRef   = useRef({ name:"", phone:"", floor_id:"" });
   const [cnslFloor, setCnslFloor]       = useState("");
+  const [cnslApts, setCnslApts]         = useState([]);
   const [editCnsl, setEditCnsl]         = useState(null);
 
   function saveApt() {
