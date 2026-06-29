@@ -51,6 +51,8 @@ function genRecords(students) {
 const TODAY = new Date().toISOString().split("T")[0];
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function asUuidOrNull(id) { return id && UUID_RE.test(id) ? id : null; }
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function asUuidOrNull(id) { return id && UUID_RE.test(id) ? id : null; }
 const LOGO_URL = "https://www.ohelasher.org.il/wp-content/uploads/2024/08/%D7%9C%D7%95%D7%92%D7%95-%D7%90%D7%95%D7%94%D7%9C-%D7%90%D7%A9%D7%A8-%D7%A0%D7%92%D7%98%D7%99%D7%91.png";
 
 function getStats(sid, records) {
