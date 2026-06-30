@@ -199,14 +199,7 @@ function Sel({ value, onChange, children, style: s }) {
 }
 
 function Logo({ size = 30 }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return <span style={{ fontSize:size }}>🌅</span>;
-  }
-  return (
-    <img src={LOGO_URL} alt="לוגו" onError={() => setFailed(true)}
-      style={{ height:size, width:"auto", maxWidth:size*2.6, objectFit:"contain" }} />
-  );
+  return <span style={{ fontSize:size }}>🌅</span>;
 }
 
 function Avatar({ name, pct, size = 34 }) {
