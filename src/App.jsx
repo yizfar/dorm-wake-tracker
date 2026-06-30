@@ -1280,9 +1280,7 @@ export default function App() {
         if (!cancelled) setDbStatus("demo");
       }
     }
-    loadStudents();
-    return () => { cancelled = true; };
-  }, [user]);
+loadStudents
 
   // טעינת קומות, מדריכים ודירות מסופהבייס (בנפרד מבחורים, כדי שכשל באחד לא ישבור את השני)
   useEffect(() => {
