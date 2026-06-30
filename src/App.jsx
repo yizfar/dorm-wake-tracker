@@ -525,7 +525,7 @@ function Dashboard({ students, records, setRecords, apartments, counselors, floo
 
       <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:16 }}>
         {[["בחורים פעילים",active.length,"#1e3a5f"],["קמו בזמן",onTimeToday,"#16a34a"],["לא קמו",absentToday,"#dc2626"],["טרם הוזן",notEntered,"#ca8a04"]].map(([l,v,c]) => (
-          <div key={l} style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12, padding:"12px 16px", flex:1, minWidth:110 }}>
+          <div key={l} style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12, padding:"12px 16px", flex:1, bold, minWidth:110 }}>
             <div style={{ fontSize:12, color:"#64748b", marginBottom:4 }}>{l}</div>
             <div style={{ fontSize:24, fontWeight:700, color:c, lineHeight:1 }}>{v}</div>
           </div>
