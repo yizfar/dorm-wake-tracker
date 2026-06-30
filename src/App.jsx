@@ -525,7 +525,7 @@ function Dashboard({ students, records, setRecords, apartments, counselors, floo
 
       <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:16 }}>
         {[["בחורים פעילים",active.length,"#1e3a5f"],["קמו בזמן",onTimeToday,"#16a34a"],["לא קמו",absentToday,"#dc2626"],["טרם הוזן",notEntered,"#ca8a04"]].map(([l,v,c]) => (
-          <div key={l} style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12, padding:"12px 16px", flex:1, bold, minWidth:110 }}>
+          <div key={l} style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12, padding:"12px 16px", flex:1,  minWidth:110 }}>
             <div style={{ fontSize:12, color:"#64748b", marginBottom:4 }}>{l}</div>
             <div style={{ fontSize:24, fontWeight:700, color:c, lineHeight:1 }}>{v}</div>
           </div>
@@ -543,7 +543,7 @@ function Dashboard({ students, records, setRecords, apartments, counselors, floo
         <div style={{ background:"#fee2e2", border:"1px solid #fca5a5", borderRadius:10, padding:"12px 16px", display:"flex", gap:10, alignItems:"flex-start", marginBottom:14 }}>
           <span style={{ fontSize:20 }}>🚨</span>
           <div>
-            <div style={{ fontWeight:600, color:"#dc2626", fontSize:13 }}>{absentToday} בחורים לא קמו היום</div>
+            <div style={{ fontWeight:600, color:"#dc2626", fontSize:23 }}>{absentToday} בחורים לא קמו היום</div>
             <div style={{ fontSize:12, color:"#b91c1c", marginTop:2 }}>
               {active.filter(s => records[s.id]?.[TODAY] === "absent").map(s => `${s.first_name} ${s.last_name}`).join(" • ")}
             </div>
