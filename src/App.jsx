@@ -1129,7 +1129,7 @@ function doDelete() {
                   first_name: form.first_name, last_name: form.last_name, phone: form.phone,
                   father_name: form.father_name, father_phone: form.father_phone,
                   mother_name: form.mother_name, mother_phone: form.mother_phone,
-                  apartment_id: asUuidOrNull(form.apartment_id), seniority: form.seniority,
+                 apartment_id: asUuidOrNull(form.apartment_id), seniority: form.seniority,
                   medical_treatment: form.medical_treatment, notes: form.notes, is_active: form.is_active,
                 }).eq("id", form.id);
                 if (error) throw error;
