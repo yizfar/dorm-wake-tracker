@@ -1095,8 +1095,7 @@ function doDelete() {
                   <td style={{padding:"9px 12px",color:"#64748b"}}>{flr?.name||"—"}</td>
                   <td style={{padding:"9px 12px",color:"#64748b"}}>{apts.map(a=>a.name).join(", ")||"—"}</td>
                   <td style={{padding:"9px 12px"}}><div style={{display:"flex",gap:4}}>
-                    <Btn onClick={()=>{setEditCnsl(c);cnslRef.current={...c};setCnslFloor(c.floor_id||"");setCnslApts(apartments.filter(a=>a.counselor_id===c.id).map(a=>a.id));setShowCnslForm(true);}} size="sm" variant="ghost">✏️</Btn>
-                    <Btn onClick={()=>setConfirmDel({type:"cnsl",id:c.id,name:c.name})} size="sm" variant="danger">🗑</Btn>
+<Btn onClick={()=>{setEditCnsl(c);cnslRef.current={...c};setCnslFloor(c.floor_id||"");setCnslApts(apartments.filter(a=>a.counselor_id===c.id).map(a=>a.id));setShowCnslForm(true);}} size="sm" variant="ghost">✏️</Btn>                    <Btn onClick={()=>setConfirmDel({type:"cnsl",id:c.id,name:c.name})} size="sm" variant="danger">🗑</Btn>
                   </div></td>
                 </tr>;
               })}</tbody>
