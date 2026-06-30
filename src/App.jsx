@@ -543,7 +543,7 @@ function Dashboard({ students, records, setRecords, apartments, counselors, floo
         <div style={{ background:"#fee2e2", border:"1px solid #fca5a5", borderRadius:10, padding:"12px 16px", display:"flex", gap:10, alignItems:"flex-start", marginBottom:14 }}>
           <span style={{ fontSize:20 }}>🚨</span>
           <div>
-            <div style={{ fontWeight:600, color:"#dc2626", fontSize:23 }}>{absentToday} בחורים לא קמו היום</div>
+            <div style={{ fontWeight:600, color:"#dc2626", fontSize:13 }}>{absentToday} בחורים לא קמו היום</div>
             <div style={{ fontSize:12, color:"#b91c1c", marginTop:2 }}>
               {active.filter(s => records[s.id]?.[TODAY] === "absent").map(s => `${s.first_name} ${s.last_name}`).join(" • ")}
             </div>
